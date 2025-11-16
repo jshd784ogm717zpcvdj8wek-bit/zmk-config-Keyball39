@@ -1,33 +1,31 @@
-/*
- * Copyright (c) 2020 ZMK Contributors
- *
- * SPDX-License-Identifier: MIT
- */
+/* keyball39_right.overlay */
+/* SPDX-License-Identifier: MIT */
 
-#include <zephyr/dt-bindings/input/input-event-codes.h>
 #include "keyball39.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
+/* 右手は列オフセット 6 */
 &default_transform {
     col-offset = <6>;
 };
 
+/* 右手の列配線 */
 &kscan0 {
-    col-gpios
-        = <&pro_micro 4 GPIO_ACTIVE_HIGH>
-        , <&pro_micro 5 GPIO_ACTIVE_HIGH>
-        , <&pro_micro 6 GPIO_ACTIVE_HIGH>
-        , <&pro_micro 7 GPIO_ACTIVE_HIGH>
-        , <&pro_micro 8 GPIO_ACTIVE_HIGH>
-        , <&pro_micro 9 GPIO_ACTIVE_HIGH>
-        ;
+    col-gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>,
+                <&pro_micro 5 GPIO_ACTIVE_HIGH>,
+                <&pro_micro 6 GPIO_ACTIVE_HIGH>,
+                <&pro_micro 7 GPIO_ACTIVE_HIGH>,
+                <&pro_micro 8 GPIO_ACTIVE_HIGH>,
+                <&pro_micro 9 GPIO_ACTIVE_HIGH>;
 };
 
+/* SPI ピン（※MOSI/MISO のピンは実配線に合わせて要確認） */
 &pinctrl {
     spi1_default: spi1_default {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK,  1, 13)>,
                     <NRF_PSEL(SPIM_MOSI, 0, 10)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
+                    <NRF_PSEL(SPIM_MISO, 0, 10)>; /* TODO: MISOが本当に P0.10 か確認 */
         };
     };
 
@@ -56,28 +54,31 @@
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio1 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-        /* --- ここが必須。今回のビルド失敗の原因 --- */
+        /* ← これら3つは binding に定義が無いので削除
+           automouse-layer = <0>;
+           scroll-layers   = <5>;
+           snipe-layers    = <6>;
+        */
+
+        /* binding で必須の3つ（今回の前エラー原因） */
         evt-type     = <INPUT_EV_REL>;
         x-input-code = <INPUT_REL_X>;
         y-input-code = <INPUT_REL_Y>;
 
-        /* 任意の設定（必要なら有効化/調整） */
-        // cpi = <1200>;
-        // swap-xy;
-        // invert-x;
-        // invert-y;
-        // force-awake;
-        // force-awake-4ms-mode;
-
-        automouse-layer = <0>;
-        scroll-layers   = <5>;
-        snipe-layers    = <6>;
+        /* 任意設定 */
+        cpi = <1200>;          /* 200〜6400(200刻み) */
+        /* swap-xy; */
+        /* invert-x; */
+        /* invert-y; */
+        /* force-awake; */
+        /* force-awake-4ms-mode; */
     };
 };
 
-/ {
-    trackball_listener {
-        compatible = "zmk,input-listener";
-        device = <&trackball>;
-    };
+/* 任意：リスナーはそのままでOK */
+&{/} {
+  trackball_listener {
+    compatible = "zmk,input-listener";
+    device = <&trackball>;
+  };
 };
