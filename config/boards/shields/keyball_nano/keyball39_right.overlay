@@ -1,4 +1,3 @@
-/* keyball39_right.overlay */
 /* SPDX-License-Identifier: MIT */
 
 #include "keyball39.dtsi"
@@ -19,13 +18,13 @@
                 <&pro_micro 9 GPIO_ACTIVE_HIGH>;
 };
 
-/* SPI ピン（※MOSI/MISO のピンは実配線に合わせて要確認） */
+/* SPI ピン（MISO/MOSI/SCK は実配線に合わせて調整可） */
 &pinctrl {
     spi1_default: spi1_default {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK,  1, 13)>,
                     <NRF_PSEL(SPIM_MOSI, 0, 10)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 10)>; /* TODO: MISOが本当に P0.10 か確認 */
+                    <NRF_PSEL(SPIM_MISO, 1, 14)>;
         };
     };
 
@@ -33,7 +32,7 @@
         group1 {
             psels = <NRF_PSEL(SPIM_SCK,  1, 13)>,
                     <NRF_PSEL(SPIM_MOSI, 0, 10)>,
-                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
+                    <NRF_PSEL(SPIM_MISO, 1, 14)>;
             low-power-enable;
         };
     };
@@ -41,7 +40,6 @@
 
 &spi1 {
     status = "okay";
-    compatible = "nordic,nrf-spim";
     pinctrl-0 = <&spi1_default>;
     pinctrl-1 = <&spi1_sleep>;
     pinctrl-names = "default", "sleep";
@@ -54,31 +52,25 @@
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio1 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-        /* ← これら3つは binding に定義が無いので削除
-           automouse-layer = <0>;
-           scroll-layers   = <5>;
-           snipe-layers    = <6>;
-        */
-
-        /* binding で必須の3つ（今回の前エラー原因） */
+        /* binding 必須（相対移動のレポート） */
         evt-type     = <INPUT_EV_REL>;
         x-input-code = <INPUT_REL_X>;
         y-input-code = <INPUT_REL_Y>;
 
         /* 任意設定 */
-        cpi = <1200>;          /* 200〜6400(200刻み) */
-        /* swap-xy; */
-        /* invert-x; */
+        cpi = <1200>;      /* 200〜6400(200刻み) */
+        /* swap-xy; */     /* 必要なら有効化 */
+        /* invert-x; */    /* 180度相当にしたいなら x/y 両方有効化 */
         /* invert-y; */
         /* force-awake; */
         /* force-awake-4ms-mode; */
     };
 };
 
-/* 任意：リスナーはそのままでOK */
+/* 入力リスナー（そのままでOK） */
 &{/} {
-  trackball_listener {
-    compatible = "zmk,input-listener";
-    device = <&trackball>;
-  };
+    trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+    };
 };
